@@ -18,13 +18,40 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
+// API endpoint for timestamp microservice
+app.get("/api/:date?", function (req, res) {
+  const dateParam = req.params.date;
 
-// your first API endpoint... 
-app.get("/api/hello", function (req, res) {
-  res.json({greeting: 'hello API'});
+  // If no date parameter is provided, return current date
+  if (!dateParam) {
+    const now = new Date();
+    return res.json({
+      unix: now.getTime(),
+      utc: now.toUTCString()
+    });
+  }
+
+  // Process the date (can be a unix timestamp or a date string)
+  let date;
+  // Check if the parameter is a number (unix timestamp)
+  if (!isNaN(dateParam)) {
+    date = new Date(parseInt(dateParam));
+  } else {
+    // Otherwise, treat it as a date string
+    date = new Date(dateParam);
+  }
+
+  // Check if the date is valid
+  if (date.toString() === 'Invalid Date') {
+    return res.json({ error: 'Invalid Date' });
+  }
+
+  // Return the unix and utc time
+  res.json({
+    unix: date.getTime(),
+    utc: date.toUTCString()
+  });
 });
-
-
 
 // Listen on port set in environment variable or default to 3000
 var listener = app.listen(process.env.PORT || 3000, function () {
